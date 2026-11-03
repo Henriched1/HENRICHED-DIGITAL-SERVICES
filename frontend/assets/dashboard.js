@@ -94,6 +94,24 @@
   main.className = "dashboard-layout";
   main.replaceChildren(sidebar,workspace);
 
+  const mobileDock = document.createElement("nav");
+  mobileDock.className = "mobile-dashboard-dock";
+  mobileDock.setAttribute("aria-label","Quick dashboard navigation");
+  mobileDock.innerHTML = `
+    <a href="/" data-dock="overview"><span>⌂</span><small>Dashboard</small></a>
+    <a href="/services" data-dock="services"><span>▦</span><small>Services</small></a>
+    <a href="/store" data-dock="store"><span>◇</span><small>Store</small></a>
+    <a href="/track-order" data-dock="tracking"><span>◎</span><small>Track</small></a>
+    <button type="button" data-dock-more><span>☰</span><small>More</small></button>
+  `;
+  mobileDock.querySelectorAll("[data-dock]").forEach(link => {
+    if (link.dataset.dock === key) link.classList.add("active");
+  });
+  mobileDock.querySelector("[data-dock-more]").addEventListener("click", () => {
+    sidebar.classList.toggle("mobile-open");
+  });
+  document.body.appendChild(mobileDock);
+
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   const key = Object.keys(pages).find(k => pages[k] === path) || "overview";
 
