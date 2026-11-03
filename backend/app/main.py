@@ -1,7 +1,14 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from uuid import uuid4
-from fastapi import FastAPI, Depends, HTTPException, Header
+import hashlib
+import hmac
+import json
+from fastapi import FastAPI, Depends, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 import httpx
 
@@ -12,25 +19,32 @@ from .schemas import OrderCreate, AdminLogin, OrderStatusUpdate, ServiceCreate
 from .security import verify_admin, create_token, require_admin
 
 DEFAULT_SERVICES = [
-    ("Business Website", "business-website", "Professional mobile-friendly website for your business.", "Web Design", 150000, 7),
-    ("Online Store", "online-store", "An online shop with product listings and customer enquiries.", "Web Design", 250000, 14),
-    ("Landing Page", "landing-page", "A focused landing page designed to generate leads.", "Web Design", 80000, 4),
-    ("Business Flyer", "business-flyer", "Professional promotional flyer for digital and print use.", "Graphic Design", 15000, 2),
-    ("Social Media Package", "social-media-package", "Branded social media graphics and content package.", "Content & Design", 35000, 4),
-    ("WhatsApp Business Setup", "whatsapp-business-setup", "Business profile, catalogue and customer contact setup.", "Automation", 25000, 2),
-    ("Business Automation", "business-automation", "Workflow automation to reduce repetitive business tasks.", "Automation", 100000, 7),
-    ("Website Maintenance", "website-maintenance", "Website updates, checks and ongoing maintenance.", "Support", 20000, 30),
+    ("Business Website", "business-website", "Professional mobile-friendly website for your business.", "Web Design", 150000, 175, 7),
+    ("Online Store", "online-store", "An online shop with product listings and customer enquiries.", "Web Design", 250000, 280, 14),
+    ("Landing Page", "landing-page", "A focused landing page designed to generate leads.", "Web Design", 80000, 90, 4),
+    ("Business Flyer", "business-flyer", "Professional promotional flyer for digital and print use.", "Graphic Design", 15000, 18, 2),
+    ("Social Media Package", "social-media-package", "Branded social media graphics and content package.", "Content & Design", 35000, 38, 4),
+    ("WhatsApp Business Setup", "whatsapp-business-setup", "Business profile, catalogue and customer contact setup.", "Automation", 25000, 28, 2),
+    ("Business Automation", "business-automation", "Workflow automation to reduce repetitive business tasks.", "Automation", 100000, 110, 7),
+    ("Website Maintenance", "website-maintenance", "Website updates, checks and ongoing maintenance.", "Support", 20000, 25, 30),
 ]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    columns = {c["name"] for c in inspect(engine).get_columns("services")}
+    if "price_usd" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE services ADD COLUMN price_usd INTEGER NOT NULL DEFAULT 0"))
     with Session(bind=engine) as db:
-        if db.query(Service).count() == 0:
-            for name, slug, desc, category, price, days in DEFAULT_SERVICES:
-                db.add(Service(name=name, slug=slug, description=desc,
-                               category=category, price=price, delivery_days=days))
-            db.commit()
+        existing = {item.slug: item for item in db.query(Service).all()}
+        for name, slug, desc, category, price, price_usd, days in DEFAULT_SERVICES:
+            if slug not in existing:
+                db.add(Service(name=name, slug=slug, description=desc, category=category,
+                               price=price, price_usd=price_usd, delivery_days=days))
+            elif existing[slug].price_usd == 0:
+                existing[slug].price_usd = price_usd
+        db.commit()
     yield
 
 app = FastAPI(
@@ -49,9 +63,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
+
 @app.get("/")
 def root():
-    return {"name": settings.app_name, "status": "online", "version": "1.0.0"}
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse(FRONTEND_DIR / "admin.html")
+
+@app.get("/api/public-config")
+def public_config():
+    return {"whatsapp_number": settings.whatsapp_number}
 
 @app.get("/health")
 def health():
@@ -75,6 +100,9 @@ def create_order(data: OrderCreate, db: Session = Depends(get_db)):
         raise HTTPException(404, "Selected service is unavailable")
 
     reference = "HDS-" + uuid4().hex[:14].upper()
+    selected_price = service.price if data.currency == "NGN" else service.price_usd
+    if selected_price <= 0:
+        raise HTTPException(400, "This service is not available in the selected currency")
     order = Order(
         reference=reference,
         customer_name=data.customer_name.strip(),
@@ -82,7 +110,8 @@ def create_order(data: OrderCreate, db: Session = Depends(get_db)):
         phone=data.phone.strip(),
         service_id=service.id,
         requirements=data.requirements,
-        amount=service.price
+        amount=selected_price,
+        currency=data.currency
     )
     db.add(order)
     db.commit()
@@ -108,9 +137,9 @@ async def initialize_payment(reference: str, db: Session = Depends(get_db)):
     payload = {
         "email": order.email,
         "amount": order.amount * 100,
-        "currency": "NGN",
+        "currency": order.currency,
         "reference": order.reference,
-        "callback_url": settings.frontend_url.rstrip("/") + "/payment/verify"
+        "callback_url": settings.frontend_url.rstrip("/") + "/"
     }
     headers = {"Authorization": f"Bearer {settings.paystack_secret_key}"}
     async with httpx.AsyncClient(timeout=20) as client:
@@ -134,28 +163,107 @@ async def verify_payment(reference: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "Order not found")
 
     headers = {"Authorization": f"Bearer {settings.paystack_secret_key}"}
-    async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.get(
-            f"https://api.paystack.co/transaction/verify/{reference}",
-            headers=headers
-        )
-    result = response.json()
-    if response.status_code >= 400 or not result.get("status"):
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.get(
+                f"https://api.paystack.co/transaction/verify/{reference}",
+                headers=headers
+            )
+        result = response.json()
+    except (httpx.RequestError, ValueError):
+        raise HTTPException(502, "Unable to contact or read Paystack response")
+
+    if response.status_code >= 400 or not isinstance(result, dict) or not result.get("status"):
         raise HTTPException(502, "Unable to verify payment")
 
-    payment = result["data"]
-    if payment.get("status") == "success":
-        if int(payment.get("amount", 0)) != order.amount * 100:
-            raise HTTPException(400, "Payment amount does not match order")
-        if payment.get("currency") != "NGN":
-            raise HTTPException(400, "Unexpected payment currency")
+    payment = result.get("data")
+    if not isinstance(payment, dict):
+        raise HTTPException(502, "Invalid payment verification response")
+
+    if payment.get("status") != "success":
+        return {"verified": False, "status": payment.get("status", "pending")}
+
+    if payment.get("reference") != order.reference:
+        raise HTTPException(400, "Payment reference does not match order")
+
+    try:
+        paid_amount = int(payment.get("amount"))
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Invalid payment amount")
+
+    if paid_amount != order.amount * 100:
+        raise HTTPException(400, "Payment amount does not match order")
+
+    if payment.get("currency") != order.currency:
+        raise HTTPException(400, "Payment currency does not match order")
+
+    if order.payment_status != "paid":
         order.payment_status = "paid"
         order.status = "received"
-        order.payment_reference = payment.get("reference")
+        order.payment_reference = payment["reference"]
         db.commit()
-        return {"verified": True, "status": "paid", "reference": reference}
 
-    return {"verified": False, "status": payment.get("status", "pending")}
+    return {"verified": True, "status": "paid", "reference": reference}
+
+
+@app.post("/api/payments/webhook")
+async def paystack_webhook(request: Request, db: Session = Depends(get_db)):
+    if not settings.paystack_secret_key:
+        raise HTTPException(503, "Payment webhook is not configured")
+
+    body = await request.body()
+    signature = request.headers.get("x-paystack-signature", "")
+    expected = hmac.new(
+        settings.paystack_secret_key.encode("utf-8"),
+        body,
+        hashlib.sha512
+    ).hexdigest()
+
+    if not signature or not hmac.compare_digest(expected, signature):
+        raise HTTPException(401, "Invalid webhook signature")
+
+    try:
+        event = json.loads(body.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        raise HTTPException(400, "Invalid webhook payload")
+
+    if not isinstance(event, dict):
+        raise HTTPException(400, "Invalid webhook payload")
+
+    if event.get("event") != "charge.success":
+        return {"received": True}
+
+    payment = event.get("data")
+    if not isinstance(payment, dict):
+        raise HTTPException(400, "Invalid payment data")
+
+    reference = payment.get("reference")
+    if not isinstance(reference, str) or not reference:
+        raise HTTPException(400, "Missing payment reference")
+
+    order = db.query(Order).filter(Order.reference == reference).first()
+    if not order or payment.get("status") != "success":
+        return {"received": True}
+
+    try:
+        paid_amount = int(payment.get("amount"))
+    except (TypeError, ValueError):
+        raise HTTPException(400, "Invalid webhook payment amount")
+
+    if paid_amount != order.amount * 100:
+        raise HTTPException(400, "Webhook amount does not match order")
+
+    if payment.get("currency") != order.currency:
+        raise HTTPException(400, "Webhook currency does not match order")
+
+    if order.payment_status != "paid":
+        order.payment_status = "paid"
+        order.status = "received"
+        order.payment_reference = reference
+        db.commit()
+
+    return {"received": True, "verified": True}
+
 
 @app.post("/api/admin/login")
 def admin_login(data: AdminLogin):
@@ -170,7 +278,8 @@ def admin_dashboard(_admin=Depends(require_admin), db: Session = Depends(get_db)
         "total_orders": len(orders),
         "paid_orders": sum(1 for o in orders if o.payment_status == "paid"),
         "pending_orders": sum(1 for o in orders if o.payment_status != "paid"),
-        "revenue_ngn": sum(o.amount for o in orders if o.payment_status == "paid"),
+        "revenue_ngn": sum(o.amount for o in orders if o.payment_status == "paid" and o.currency == "NGN"),
+        "revenue_usd": sum(o.amount for o in orders if o.payment_status == "paid" and o.currency == "USD"),
         "recent_orders": orders[:20]
     }
 

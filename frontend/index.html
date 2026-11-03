@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<meta name="description" content="Professional websites, online stores, branding, digital marketing and business automation by Henriched Digital Services.">
+<title>Henriched Digital Services | Grow Your Business</title>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="brand-mark">H</span><span>HENRICHED <small>DIGITAL SERVICES</small></span></a>
+  <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+  <nav id="nav">
+    <a href="#services">Services</a>
+    <a href="#process">How it works</a>
+    <a href="#about">About</a>
+    <a class="nav-cta" href="#services">Get started</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero">
+  <div class="hero-content">
+    <span class="eyebrow">YOUR DIGITAL GROWTH PARTNER</span>
+    <h1>Build your brand.<br><span>Grow your business.</span></h1>
+    <p>We turn your ideas into professional digital experiences. From stunning websites to smart business solutions, we're here to help your business move forward.</p>
+    <div class="hero-actions">
+      <a class="button primary" href="#services">Explore our services <span>→</span></a>
+      <a class="button secondary" href="#contact">Talk to us</a>
+    </div>
+    <div class="hero-proof"><span>✦</span> Creative solutions. Professional delivery. Real business value.</div>
+  </div>
+  <div class="hero-art">
+    <div class="art-card art-main">
+      <div class="art-top"><span>HENRICHED</span><span class="live-dot">● ONLINE</span></div>
+      <div class="art-graphic"><div class="circle c1"></div><div class="circle c2"></div><div class="art-letter">H.</div></div>
+      <div class="art-caption"><strong>Your next chapter starts here.</strong><small>Ideas transformed into digital success.</small></div>
+    </div>
+    <div class="floating-card float-one">✦ <span>Creative design</span></div>
+    <div class="floating-card float-two">↗ <span>Business growth</span></div>
+  </div>
+</section>
+
+<section class="trust-strip">
+  <span>DESIGNED FOR AMBITION</span><span>BUILT FOR GROWTH</span><span>MADE TO WORK FOR YOU</span>
+</section>
+
+<section class="section" id="services">
+  <div class="section-heading">
+    <div><span class="eyebrow">WHAT WE DO</span><h2>Services that move<br>your business forward.</h2></div>
+    <p>Choose a service to get started. Tell us what you need, and we'll help turn your vision into reality.</p>
+  </div>
+  <div id="serviceGrid" class="service-grid"><div class="loading">Loading our services…</div></div>
+</section>
+
+<section class="process-section" id="process">
+  <div class="section-heading centered"><span class="eyebrow">A SIMPLE PROCESS</span><h2>From idea to done.</h2><p>Getting started with us is straightforward.</p></div>
+  <div class="steps">
+    <article><span>01</span><h3>Choose a service</h3><p>Explore our services and select what your business needs.</p></article>
+    <article><span>02</span><h3>Share your brief</h3><p>Tell us about your goals, requirements and expectations.</p></article>
+    <article><span>03</span><h3>We get to work</h3><p>We review your request and begin creating your solution.</p></article>
+    <article><span>04</span><h3>Grow with confidence</h3><p>Receive your completed work and ongoing support when needed.</p></article>
+  </div>
+</section>
+
+<section class="about-section" id="about">
+  <div class="about-mark">H.</div>
+  <div><span class="eyebrow">ABOUT HENRICHED</span><h2>Good ideas deserve<br>great execution.</h2><p>HENRICHED DIGITAL SERVICES helps individuals, entrepreneurs and businesses establish a stronger digital presence. We combine creativity, technology and practical thinking to deliver solutions that make a difference.</p><a class="text-link" href="#contact">Let's discuss your project →</a></div>
+</section>
+
+<section class="contact-section" id="contact">
+  <span class="eyebrow">LET'S BUILD SOMETHING</span>
+  <h2>Your next big idea<br>starts with a conversation.</h2>
+  <p>Have a question or a project in mind? Send us a message.</p>
+  <a class="button primary" id="whatsappLink" href="https://wa.me/" target="_blank" rel="noopener">Chat with us on WhatsApp ↗</a>
+</section>
+</main>
+
+<footer><a class="brand" href="/"><span class="brand-mark">H</span><span>HENRICHED <small>DIGITAL SERVICES</small></span></a><p>© <span id="year"></span> Henriched Digital Services. All rights reserved.</p><a href="/admin">Admin</a></footer>
+
+<div class="modal-backdrop" id="orderModal">
+ <section class="modal">
+  <button class="modal-close" id="closeModal" aria-label="Close">×</button>
+  <span class="eyebrow">START YOUR PROJECT</span>
+  <h2 id="modalTitle">Place your order</h2>
+  <p id="modalDescription" class="modal-description"></p>
+  <form id="orderForm">
+   <input type="hidden" id="serviceId">
+   <label>Your full name<input id="customerName" required minlength="2" maxlength="150" placeholder="Enter your name"></label>
+   <label>Email address<input id="customerEmail" type="email" required placeholder="you@example.com"></label>
+   <label>Phone / WhatsApp number<input id="customerPhone" required minlength="7" placeholder="+234..."></label>
+   <label>Payment currency<select id="orderCurrency"><option value="NGN">Nigerian Naira (NGN)</option><option value="USD">US Dollars (USD)</option></select></label>
+   <label>Tell us about your project<textarea id="requirements" rows="4" maxlength="5000" placeholder="Describe what you need..."></textarea></label>
+   <div class="order-total"><span>Service price</span><strong id="orderPrice">₦0</strong></div>
+   <button class="button primary full" id="submitOrder" type="submit">Continue to payment →</button>
+   <small class="form-note">Your order details are sent securely. Payment is processed by Paystack.</small>
+   <div id="formMessage" role="status"></div>
+  </form>
+ </section>
+</div>
+<script src="/assets/app.js"></script>
+</body>
+</html>

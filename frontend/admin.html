@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827"><title>Admin | Henriched Digital Services</title>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="admin-body">
+<header class="topbar"><a class="brand" href="/"><span class="brand-mark">H</span><span>HENRICHED <small>ADMINISTRATION</small></span></a><a href="/">View website ↗</a></header>
+<main class="admin-wrap">
+<section id="loginPanel" class="login-panel">
+<span class="eyebrow">PRIVATE WORKSPACE</span><h1>Administrator login</h1><p>Sign in to manage customer orders.</p>
+<form id="loginForm"><label>Email address<input id="adminEmail" type="email" required autocomplete="username"></label><label>Password<input id="adminPassword" type="password" required autocomplete="current-password"></label><button class="button primary full">Sign in →</button><div id="loginMessage" role="status"></div></form>
+</section>
+<section id="dashboardPanel" hidden>
+<div class="admin-heading"><div><span class="eyebrow">BUSINESS OVERVIEW</span><h1>Dashboard</h1></div><button id="logoutButton" class="button secondary">Sign out</button></div>
+<div class="stats-grid" id="stats"></div>
+<div class="orders-heading"><h2>Customer orders</h2><button id="refreshOrders" class="button secondary">Refresh</button></div>
+<div class="table-wrap"><table><thead><tr><th>Reference</th><th>Customer</th><th>Service</th><th>Amount</th><th>Payment</th><th>Order status</th><th>Update</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+<p id="adminMessage" role="status"></p>
+</section>
+</main>
+<script src="/assets/admin.js"></script>
+</body>
+</html>

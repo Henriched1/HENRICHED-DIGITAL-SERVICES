@@ -11,6 +11,7 @@ class Service(Base):
     description = Column(Text, default="")
     category = Column(String(80), default="Digital Services")
     price = Column(Integer, nullable=False, default=0)
+    price_usd = Column(Integer, nullable=False, default=0)
     delivery_days = Column(Integer, default=3)
     active = Column(Integer, default=1)
 
