@@ -12,15 +12,32 @@
     contact: ["#contact"]
   };
 
+  const pages = {
+    overview: "/", services: "/services",
+    portfolio: "/portfolio", store: "/store",
+    tracking: "/track-order", about: "/about",
+    contact: "/contact"
+  };
+
   const labels = [
-    ["overview", "Overview", "⌂"],
-    ["services", "Our services", "▦"],
-    ["portfolio", "Portfolio", "▧"],
-    ["store", "Store demo", "◇"],
-    ["tracking", "Track an order", "◎"],
-    ["about", "About us", "ⓘ"],
-    ["contact", "Contact", "✉"]
+    ["overview","Overview","⌂"],
+    ["services","Our services","▦"],
+    ["portfolio","Portfolio","▧"],
+    ["store","Store demo","◇"],
+    ["tracking","Track an order","◎"],
+    ["about","About us","ⓘ"],
+    ["contact","Contact","✉"]
   ];
+
+  const subtitles = {
+    overview:"Your digital growth workspace.",
+    services:"Explore services and choose what your business needs.",
+    portfolio:"Explore illustrative concepts and creative capabilities.",
+    store:"See how products can be presented in an online store.",
+    tracking:"Check the progress of an existing customer order.",
+    about:"Learn about our approach to digital solutions.",
+    contact:"Let's discuss your next project."
+  };
 
   const elements = {};
   Object.entries(groups).forEach(([key, selectors]) => {
@@ -36,11 +53,10 @@
     </div>
     <div class="dashboard-nav-label">WORKSPACE</div>
     <nav class="dashboard-nav" aria-label="Dashboard navigation">
-      ${labels.map(([key, label, icon]) =>
-        `<button type="button" data-view="${key}" class="dashboard-nav-item">
+      ${labels.map(([key,label,icon]) => `
+        <a href="${pages[key]}" data-page="${key}" class="dashboard-nav-item">
           <span>${icon}</span>${label}
-        </button>`
-      ).join("")}
+        </a>`).join("")}
     </nav>
     <div class="dashboard-side-bottom">
       <a href="/admin">Private admin workspace ↗</a>
@@ -53,8 +69,8 @@
     <div class="dashboard-heading">
       <div>
         <span class="eyebrow">HENRICHED DIGITAL SERVICES</span>
-        <h1 id="dashboardPageTitle">Overview</h1>
-        <p id="dashboardPageSubtitle">Your digital growth workspace.</p>
+        <h1 id="dashboardPageTitle"></h1>
+        <p id="dashboardPageSubtitle"></p>
       </div>
       <span class="dashboard-status"><i></i> Available for projects</span>
     </div>
@@ -67,7 +83,7 @@
 
   const views = workspace.querySelector(".dashboard-views");
 
-  Object.entries(elements).forEach(([key, nodes]) => {
+  Object.entries(elements).forEach(([key,nodes]) => {
     const view = document.createElement("div");
     view.className = "dashboard-view";
     view.dataset.view = key;
@@ -76,76 +92,62 @@
   });
 
   main.className = "dashboard-layout";
-  main.replaceChildren(sidebar, workspace);
+  main.replaceChildren(sidebar,workspace);
 
-  const subtitles = {
-    overview: "Your digital growth workspace.",
-    services: "Explore services and choose what your business needs.",
-    portfolio: "Explore illustrative concepts and creative capabilities.",
-    store: "See how products can be presented in an online store.",
-    tracking: "Check the progress of an existing customer order.",
-    about: "Learn about our approach to digital solutions.",
-    contact: "Let's discuss your next project."
-  };
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  const key = Object.keys(pages).find(k => pages[k] === path) || "overview";
 
-  function showView(key) {
-    if (!elements[key]) key = "overview";
-
-    views.querySelectorAll(".dashboard-view").forEach(view => {
-      view.hidden = view.dataset.view !== key;
-    });
-
-    sidebar.querySelectorAll("[data-view]").forEach(button => {
-      const active = button.dataset.view === key;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-current", active ? "page" : "false");
-    });
-
-    document.getElementById("dashboardPageTitle").textContent =
-      labels.find(item => item[0] === key)[1];
-    document.getElementById("dashboardPageSubtitle").textContent =
-      subtitles[key];
-
-    sidebar.classList.remove("mobile-open");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    history.replaceState(null, "", "#" + key);
-  }
-
-  sidebar.addEventListener("click", event => {
-    const button = event.target.closest("[data-view]");
-    if (button) showView(button.dataset.view);
+  views.querySelectorAll(".dashboard-view").forEach(view => {
+    view.hidden = view.dataset.view !== key;
   });
+
+  sidebar.querySelectorAll("[data-page]").forEach(link => {
+    const active = link.dataset.page === key;
+    link.classList.toggle("active",active);
+    if (active) link.setAttribute("aria-current","page");
+    else link.removeAttribute("aria-current");
+  });
+
+  document.getElementById("dashboardPageTitle").textContent =
+    labels.find(x => x[0] === key)[1];
+
+  document.getElementById("dashboardPageSubtitle").textContent =
+    subtitles[key];
+
+  if (key !== "overview") {
+    workspace.querySelector(".dashboard-quick-stats").hidden = true;
+  }
 
   document.addEventListener("click", event => {
     const link = event.target.closest('a[href^="#"]');
     if (!link) return;
-    const target = link.getAttribute("href").slice(1);
-    const mapping = {
-      services: "services",
-      process: "services",
-      "hds-portfolio": "portfolio",
-      "hds-shop": "store",
-      "hds-track": "tracking",
-      about: "about",
-      contact: "contact"
-    };
-    if (mapping[target]) {
+
+    const id = link.getAttribute("href").slice(1);
+    const target = {
+      services:"/services",
+      process:"/services",
+      "hds-portfolio":"/portfolio",
+      "hds-shop":"/store",
+      "hds-track":"/track-order",
+      about:"/about",
+      contact:"/contact"
+    }[id];
+
+    if (target) {
       event.preventDefault();
-      showView(mapping[target]);
+      window.location.assign(target);
     }
   });
 
-  const menuButton = document.getElementById("menuToggle");
-  if (menuButton) {
-    menuButton.setAttribute("aria-label", "Toggle dashboard menu");
-    menuButton.onclick = () => sidebar.classList.toggle("mobile-open");
+  const menu = document.getElementById("menuToggle");
+  if (menu) {
+    menu.setAttribute("aria-label","Toggle dashboard menu");
+    menu.onclick = () => sidebar.classList.toggle("mobile-open");
   }
 
-  const initial = location.hash.replace("#", "");
-  showView(groups[initial] ? initial : ({
-    "hds-portfolio": "portfolio",
-    "hds-shop": "store",
-    "hds-track": "tracking",
-    process: "services"
-  }[initial] || "overview"));
+  document.title =
+    labels.find(x => x[0] === key)[1] +
+    " | Henriched Digital Services";
+
+  window.scrollTo(0,0);
 })();

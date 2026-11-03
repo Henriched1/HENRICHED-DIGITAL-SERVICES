@@ -70,6 +70,15 @@ app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="
 def root():
     return FileResponse(FRONTEND_DIR / "index.html")
 
+@app.get("/services")
+@app.get("/portfolio")
+@app.get("/store")
+@app.get("/track-order")
+@app.get("/about")
+@app.get("/contact")
+def customer_dashboard_page():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
 @app.get("/admin")
 def admin_page():
     return FileResponse(FRONTEND_DIR / "admin.html")
