@@ -310,3 +310,21 @@ def add_service(data: ServiceCreate, _admin=Depends(require_admin), db: Session 
     db.commit()
     db.refresh(service)
     return service
+
+@app.get("/api/orders/track")
+def track_order(reference: str, email: str, db: Session = Depends(get_db)):
+    order = db.query(Order).filter(
+        Order.reference == reference.strip(),
+        Order.email.ilike(email.strip())
+    ).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found. Check your reference and email.")
+
+    return {
+        "reference": order.reference,
+        "service": order.service.name if order.service else "Digital service",
+        "status": order.status,
+        "payment_status": order.payment_status,
+        "created_at": order.created_at.isoformat() if order.created_at else None
+    }

@@ -144,3 +144,23 @@ if(params.get("reference")){
 
 loadServices();
 loadContact();
+
+document.getElementById("hdsTrackForm")?.addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const result = document.getElementById("hdsTrackResult");
+  const reference = document.getElementById("hdsTrackReference").value.trim();
+  const email = document.getElementById("hdsTrackEmail").value.trim();
+  result.textContent = "Checking your order...";
+  try {
+    const query = new URLSearchParams({reference, email});
+    const response = await fetch("/api/orders/track?" + query);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Unable to find order.");
+    result.textContent = "Order: " + data.reference +
+      " | Service: " + data.service +
+      " | Status: " + data.status +
+      " | Payment: " + data.payment_status;
+  } catch (error) {
+    result.textContent = error.message;
+  }
+});

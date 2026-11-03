@@ -14,7 +14,7 @@
   <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
   <nav id="nav">
     <a href="#services">Services</a>
-    <a href="#process">How it works</a>
+    <a href="#hds-portfolio">Our work</a><a href="#hds-shop">Store demo</a><a href="#hds-track">Track order</a><a href="#process">How it works</a>
     <a href="#about">About</a>
     <a class="nav-cta" href="#services">Get started</a>
   </nav>
@@ -76,7 +76,53 @@
   <p>Have a question or a project in mind? Send us a message.</p>
   <a class="button primary" id="whatsappLink" href="https://wa.me/" target="_blank" rel="noopener">Chat with us on WhatsApp ↗</a>
 </section>
-</main>
+
+<section class="hds-showcase" id="hds-portfolio">
+  <div class="hds-kicker">OUR CREATIVE CAPABILITIES</div>
+  <h2>See what your business <em>could become.</em></h2>
+  <p class="hds-intro">Explore illustrative design concepts showing the quality and direction of work we can create. These are demonstrations, not claimed customer projects.</p>
+  <div class="hds-projects">
+    <article><div class="hds-project hds-project-one"><span>WEBSITE CONCEPT</span><strong>Make your<br>business stand out.</strong><small>YOUR BRAND · YOUR STORY</small></div><h3>Business website</h3><p>Professional, mobile-friendly digital presence.</p></article>
+    <article><div class="hds-project hds-project-two"><span>BRAND CONCEPT</span><strong>Ideas into<br>identity.</strong><small>DESIGN STUDY</small></div><h3>Brand and flyer design</h3><p>Visual materials that communicate your brand.</p></article>
+    <article><div class="hds-project hds-project-three"><span>CAMPAIGN CONCEPT</span><strong>Be seen.<br>Be remembered.</strong><small>SOCIAL CREATIVE</small></div><h3>Social media creative</h3><p>Consistent content for your online presence.</p></article>
+  </div>
+</section>
+
+<section class="hds-shop" id="hds-shop">
+  <div class="hds-kicker">ONLINE STORE DEMONSTRATION</div>
+  <h2>Products presented <em>beautifully.</em></h2>
+  <p class="hds-intro">This sample shop demonstrates how your own products can appear in an online store. The items below are fictional examples, not products for sale.</p>
+  <div class="hds-products">
+    <article><div class="hds-product-image hds-product-a">01</div><small>DEMO PRODUCT</small><h3>Everyday Collection</h3><p>Product images, descriptions and prices supplied by the store owner.</p></article>
+    <article><div class="hds-product-image hds-product-b">02</div><small>DEMO PRODUCT</small><h3>Modern Accessories</h3><p>Customers browse products and request or purchase from the shop.</p></article>
+    <article><div class="hds-product-image hds-product-c">03</div><small>DEMO PRODUCT</small><h3>Home Essentials</h3><p>Stock availability and physical delivery are managed by the shop owner.</p></article>
+  </div>
+  <div class="hds-owner-note"><strong>Where do the products come from?</strong><p>You supply your product names, photographs, descriptions, prices and stock information. We organise and upload them into your online store. Product sourcing can be requested separately.</p><strong>Who delivers products to shoppers?</strong><p>Your business receives shoppers' orders and handles stock, packaging and delivery unless a different arrangement is agreed.</p></div>
+</section>
+
+<section class="hds-trust">
+  <div class="hds-kicker">A BETTER CUSTOMER EXPERIENCE</div>
+  <h2>Clarity at every <em>stage.</em></h2>
+  <div class="hds-trust-grid">
+    <article><b>01 · Clear scope</b><p>We confirm the work, price and expected timeline before a project begins.</p></article>
+    <article><b>02 · Progress updates</b><p>Know when your project is received, underway and ready for review.</p></article>
+    <article><b>03 · Preview and approval</b><p>Review agreed previews and provide feedback before final handover.</p></article>
+    <article><b>04 · Final delivery</b><p>Receive the agreed files, website links, access and instructions.</p></article>
+  </div>
+</section>
+
+<section class="hds-track" id="hds-track">
+  <div class="hds-kicker">CUSTOMER ORDER CENTRE</div>
+  <h2>Keep up with your <em>project.</em></h2>
+  <p>Already placed an order? Enter your order reference and the email address used when ordering to check its current status.</p>
+  <form id="hdsTrackForm">
+    <label>Order reference<input id="hdsTrackReference" required placeholder="Example: HDS-XXXXXXXXXXXXXX"></label>
+    <label>Email address<input id="hdsTrackEmail" type="email" required placeholder="The email used for your order"></label>
+    <button type="submit">Check my order →</button>
+  </form>
+  <div id="hdsTrackResult" role="status" aria-live="polite"></div>
+</section>
+\n</main>
 
 <footer><a class="brand" href="/"><span class="brand-mark">H</span><span>HENRICHED <small>DIGITAL SERVICES</small></span></a><p>© <span id="year"></span> Henriched Digital Services. All rights reserved.</p><a href="/admin">Admin</a></footer>
 
